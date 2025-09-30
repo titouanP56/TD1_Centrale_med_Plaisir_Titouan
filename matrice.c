@@ -1,17 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
-int** saisir(int ligne, int column);
+#define MAX 100
 
-int** creer_mat(int ligne, int column){
+void saisir(int** Mat, int nb)
+{
+    int i,j;
 
-    int** tab = (int**)malloc(ligne * sizeof(int*));
+    printf ("entrer les valeurs de la matrice\n");
+    for (i = 0; i < nb; i++)
+    {
+         printf(" ligne numero %d \n",i+1);
+         for(j=0;j<nb;j++)
+         {
+             // Accès correct à l'élément de la matrice allouée dynamiquement
+             printf ("M[%d][%d] = ", i+1,j+1);
+             // Le rewind(stdout) n'est généralement pas nécessaire et peut causer des problèmes. Je l'ai retiré.
+             // On utilise simplement Mat[i][j] car c'est déjà l'adresse d'un entier après le double déréférencement
+             scanf ("%d", &(Mat[i][j]));
+         }
+    }
+}
+
+
+int** creer_mat(){
+
+    int** tab = (int**)malloc(MAX * sizeof(int*));
     if(tab == NULL){
         printf("Erreur d'allocation de mémoire pour les lignes.");
         return NULL;
     }
-    for(int i = 0; i < ligne; i++){
-        tab[i] = (int*)malloc(column * sizeof(int));
+    for(int i = 0; i < MAX; i++){
+        tab[i] = (int*)malloc(MAX * sizeof(int));
         if(tab[i] == NULL){
             printf("Erreur d'allocation de mémoire pour la colonne %d.", i);
             return NULL;
@@ -35,24 +57,24 @@ void afficher(int n, int m, int** matrice){
     printf("]");
 }
 
-int** additioner(int n, int m, int** mat1, int ** mat2){
+int** additioner(int n, int** mat1, int ** mat2){
 
     for(int i = 0; i<n; i ++){
-        for(int j = 0; j<m; j++){
+        for(int j = 0; j<n; j++){
             mat1[i][j] = mat1[i][j] + mat2[i][j];
         }
     }
     return mat1;
 }
 
-int** multiplier(int ligne1, int m, int column2, int** mat1, int** mat2){
+int** multiplier(int n, int** mat1, int** mat2){
 
-    int** rep = creer_mat(ligne1, column2);
+    int** rep = creer_mat(n, n);
 
-    for(int i = 0; i<ligne1; i ++){
-        for(int k = 0; k<column2; k++){
+    for(int i = 0; i<n; i ++){
+        for(int k = 0; k<n; k++){
             rep[i][k] = 0;
-            for(int j = 0; j<m; j++){
+            for(int j = 0; j<n; j++){
                 rep[i][k] = rep[i][k] + mat1[i][j] * mat2[j][k];
             }
         }
@@ -62,11 +84,34 @@ int** multiplier(int ligne1, int m, int column2, int** mat1, int** mat2){
 }
 
 
+int** menu() {
+    char buffer[50];
+    scanf("saisissez une operation a realiser (multiplier ou additioner) : %49s", buffer);
+
+    int n;
+    scanf("taille de la matrice : %d", n);
+    
+    int** mat1 = creer_mat(MAX, MAX);
+    int** mat2 = creer_mat(MAX, MAX);
+
+    saisir(mat1,n);
+    saisir(mat2, n);
+
+    if (strcmp(buffer, "multiplier") == 0){
+        return multiplier(n, mat1, mat2);
+    }
+    else{
+        return additioner(n, mat1, mat2);
+    }
+
+}
+
+
 
 int main(){
     int n = 2;
     int m = 2;
-    int k = 3;
+    int k = 2;
 
     int** tab = (int**)malloc(n * sizeof(int*));
     if(tab == NULL){
@@ -103,14 +148,12 @@ int main(){
 
     tab2[0][0] = 1;
     tab2[0][1] = 1;
-    tab2[0][2] = 2;
     tab2[1][0] = 1;
     tab2[1][1] = 1;
-    tab2[1][2] = 2;
 
 
 
-    int ** mult = multiplier(n,m,k,tab,tab2);
+    int ** mult = multiplier(n,tab,tab2);
     afficher(m, k, mult);
 
 
